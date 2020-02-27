@@ -12,6 +12,7 @@ using System.Security;
 using System.Threading;
 using System.Web;
 using System.Web.Script.Serialization;
+using System.Collections.ObjectModel;
 
 namespace Microsoft.Dynamics365.UIAutomation.Api.UCI
 {
@@ -1536,6 +1537,104 @@ namespace Microsoft.Dynamics365.UIAutomation.Api.UCI
 
                 driver.WaitForTransaction();
                 return true;
+            });
+        }
+        #endregion
+
+        #region SubGrid
+        public BrowserCommandResult<IWebElement> SelectSubGrid(int index)
+        {
+            return this.Execute(GetOptions($"Load the Subgrid at {index} into xrmApp.SubGrid"), driver =>
+            {
+                if(!driver.HasElement(By.ClassName("editableGrid")))
+                {
+                    throw new NotFoundException("No subgrid found on this form tab");
+                }
+
+                ReadOnlyCollection<IWebElement> subgrids = driver.FindElements(By.ClassName("editableGrid"));
+
+                IWebElement subgridContainer = subgrids[index];
+
+                return subgridContainer;
+            });
+        }
+
+        public BrowserCommandResult<List<GridItem>> GetSubGridItems(IWebElement subgrid)
+        {
+            return this.Execute(GetOptions($"Get Subgrid Items for Subgrid"), driver =>
+            {
+                List<GridItem> subGridRows = new List<GridItem>();
+                List<string> columns = new List<string>();
+
+                var headerCells = subgrid.FindElements(By.XPath(AppElements.Xpath[AppReference.Subgrid.SubgridHeaders]));
+
+                foreach (IWebElement headerCell in headerCells)
+                {
+                    columns.Add(headerCell.Text);
+                }
+
+                //Find the rows
+                var rows = subgrid.FindElements(By.XPath(AppElements.Xpath[AppReference.Entity.SubGridRows]));
+
+                //Process each row
+                foreach (IWebElement row in rows)
+                {
+                    List<string> cellValues = new List<string>();
+                    GridItem item = new GridItem();
+
+                    //Get the entityId and entity Type
+                    if (row.GetAttribute("data-lp-id") != null)
+                    {
+                        var rowAttributes = row.GetAttribute("data-lp-id").Split('|');
+                        item.Id = Guid.Parse(rowAttributes[3]);
+                        item.EntityName = rowAttributes[4];
+                    }
+
+                    var cells = row.FindElements(By.XPath(AppElements.Xpath[AppReference.Entity.SubGridCells]));
+
+                    if (cells.Count > 0)
+                    {
+                        foreach (IWebElement thisCell in cells)
+                            cellValues.Add(thisCell.Text);
+
+                        for (int i = 0; i < columns.Count; i++)
+                        {
+                            //The first cell is always a checkbox for the record.  Ignore the checkbox.
+                            item[columns[i]] = cellValues[i + 1];
+                        }
+
+                        subGridRows.Add(item);
+                    }
+                }
+
+                return subGridRows;
+            });
+        }
+
+        internal BrowserCommandResult<bool> OpenSubGridRecord(IWebElement subgrid, int index = 0)
+        {
+            return this.Execute(GetOptions($"Open Subgrid record for subgrid"), driver =>
+            {
+                //Get the GridName
+                string subGridName = subgrid.GetAttribute("data-id").Replace("dataSetRoot_", String.Empty);
+
+                //cell-0 is the checkbox for each record
+                var checkBox = driver.FindElement(By.XPath(AppElements.Xpath[AppReference.Entity.SubGridRecordCheckbox].Replace("[INDEX]", index.ToString()).Replace("[NAME]", subGridName)));
+
+                driver.DoubleClick(checkBox);
+
+                driver.WaitForTransaction();
+
+                return true;
+            });
+        }
+
+        internal BrowserCommandResult<int> GetSubGridItemsCount(IWebElement subgrid)
+        {
+            return this.Execute(GetOptions($"Get Subgrid Items Count for subgrid"), driver =>
+            {
+                List<GridItem> rows = GetSubGridItems(subgrid);
+                return rows.Count;
             });
         }
         #endregion

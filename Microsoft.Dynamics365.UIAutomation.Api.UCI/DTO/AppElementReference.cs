@@ -67,6 +67,16 @@ namespace Microsoft.Dynamics365.UIAutomation.Api.UCI
             public static string SubArea = "Grid_SubArea";
         }
 
+        public static class Subgrid
+        {
+            public static string SubgridHeaders = "Subgrid_Headers";
+            public static string SubgridTitle = "Subgrid_Title";
+            public static string SubgridContents = "Subgrid_Contents";
+            public static string SubgridCells = "Subgrid_Cells";
+            public static string SubgridRows = "Subgrid_Rows";
+            public static string SubgridRecordCheckbox = "Subgrid_RecordCheckbox";
+        }
+
         public static class Entity
         {
             public static string Form = "Entity_FormContainer";
@@ -310,6 +320,13 @@ namespace Microsoft.Dynamics365.UIAutomation.Api.UCI
             { "Grid_ViewContainer"   , "//ul[contains(@id,'ViewSelector')]" },
             { "Grid_SubArea"   , "//*[contains(@data-id,'[NAME]')]"},
             
+            //Subgrid
+            { "Subgrid_Headers",".//div[contains(@class,'grid-header-text')]"},
+            { "Subgrid_Title", "//div[contains(text(), '[NAME]')]"},
+            { "Subgrid_Contents", "//div[contains(text(), '[NAME]')]/parent::div/parent::div/parent::div"},
+            { "Subgrid_Cells",".//div[contains(@role,'gridcell')]"},
+            { "Subgrid_Rows",".//div[contains(@class,'wj-row')]"},
+            { "Subgrid_RecordCheckbox","//div[contains(@data-id,'cell-[INDEX]-1') and contains(@data-lp-id,'[NAME]')]"},
 
             //Entity
             { "Entity_Assign"       , "//button[contains(@data-id,'Assign')]"},
@@ -348,12 +365,6 @@ namespace Microsoft.Dynamics365.UIAutomation.Api.UCI
             { "Entity_FieldControlDateTimeTimeInputUCI","//div[contains(@data-id,'[FIELD].fieldControl._timecontrol-datetime-container')]/div/div/input" },
             { "Entity_LookupResultsDropdown", "//*[contains(@data-id, \'[NAME].fieldControl-LookupResultsDropdown_[NAME]_tab')]" },
             { "Entity_Footer", "//div[contains(@id,'footerWrapper')]" },
-            { "Entity_SubGridTitle", "//div[contains(text(), '[NAME]')]"},
-            { "Entity_SubGridContents", "//div[contains(text(), '[NAME]')]/parent::div/parent::div/parent::div"},
-            { "Entity_SubGridCells",".//div[contains(@role,'gridcell')]"},
-            { "Entity_SubGridRows",".//div[contains(@class,'wj-row')]"},
-            { "Entity_SubGridHeaders",".//div[contains(@class,'grid-header-text')]"},
-            { "Entity_SubGridRecordCheckbox","//div[contains(@data-id,'cell-[INDEX]-1') and contains(@data-lp-id,'[NAME]')]"},
             { "Entity_FieldLookupButton","//button[contains(@data-id,'[NAME]_search')]" },
             { "Entity_SearchButtonIcon", "//span[contains(@data-id,'microsoftIcon_searchButton')]" },
             { "Entity_Header", "//div[contains(@data-id,'form-header')]"},
